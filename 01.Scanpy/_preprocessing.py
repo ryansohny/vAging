@@ -1,5 +1,6 @@
 #export PATH=/data/Projects/phenomata/99.Tools/anaconda3/bin:$PATH
-#source activate scanpy_1.8.1
+#source activate scanpy_1.9.1
+#ipython --profile=vaging (in cm03)
 
 from anndata import AnnData
 import anndata
