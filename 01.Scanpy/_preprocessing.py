@@ -40,6 +40,24 @@ batch_palette=['#689aff', '#fdbf6f', '#b15928']
 test3 = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3.h5ad")
 test3_endo = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3_endo.h5ad")
 
+endo_leiden_to_celltype_dict = {'0': 'EC_1',
+'1': 'EC_4',
+'2': 'EC_2',
+'3': 'EC_3',
+'4': 'EC_5',
+'5': 'EC_6'}
+test3_endo.obs['Subpopulation of Endothelial Cells'] = test3_endo.obs['endo_leiden_r05'].map(lambda x: endo_leiden_to_celltype_dict[x]).astype('category')
+sc.pl.umap(test3_endo, color=['Subpopulation of Endothelial Cells'], add_outline=False, legend_loc='right margin', color_map=cmap, palette='Accent')
+test3_endo2 = test3_endo[~test3_endo.obs['Subpopulation of Endothelial Cells'].isin(['EC_5', 'EC_6'])].copy()
+colormap = {'EC_1': '#8dd3c7',
+            'EC_2': '#80b1d3',
+            'EC_3': '#fccde5',
+            'EC_4': '#bebada'}
+sc.pl.umap(test3_endo2, color='Subpopulation of Endothelial Cells', palette=colormap) # update colormap
+lin = ('EC_1', 'EC_2', 'EC_3', 'EC_4')
+test3_endo2.obs['Subpopulation of Endothelial Cells'] = test3_endo2.obs['Subpopulation of Endothelial Cells'].cat.reorder_categories(list(lin), ordered=True)
+
+
 def umap_all(LIST):
     if type(LIST) == list:sc.pl.umap(test3, layer='magic', color=LIST, add_outline=False, legend_loc='right margin', color_map=cmap, ncols=4)
     elif type(LIST) == str:sc.pl.umap(test3, layer='magic', color=LIST.split(), add_outline=False, legend_loc='right margin', color_map=cmap, ncols=4)
