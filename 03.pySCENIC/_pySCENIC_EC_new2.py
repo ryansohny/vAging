@@ -2,7 +2,9 @@
 # 2022-05-12
 
 ## pySCENIC's AUC matrix retrieval
-# Environment (scanpy_1.8.1)
+# Environment (pySCENIC)
+# ipython --profile=pyscenic
+
 import scanpy as sc
 import loompy as lp
 import pandas as pd
@@ -71,7 +73,7 @@ def plot_rss(rss, cell_type, top_n=5, max_n=None, ax=None):
     if max_n is None:
         max_n = rss.shape[1]
     data = rss.T[cell_type].sort_values(ascending=False)[0:max_n]
-    ax.plot(np.arange(len(data)), data, '.', color='darkblue')
+    ax.plot(np.arange(len(data)), data, '.', color='#104e8b')
     ax.set_ylim([floor(data.min() * 100.0) / 100.0, ceil(data.max() * 100.0) / 100.0])
     ax.set_ylabel('RSS')
     ax.set_xlabel('Regulon')
@@ -95,6 +97,8 @@ def plot_rss(rss, cell_type, top_n=5, max_n=None, ax=None):
 
 
 
+
+
 fig = plt.figure(figsize=(15, 8))
 
 for c,num in zip(cats, range(1,len(cats)+1)):
@@ -111,3 +115,38 @@ for c,num in zip(cats, range(1,len(cats)+1)):
 
 sns.despine()
 
+
+# CELL TYPE SPECIFIC REGULATORS - Z-SCORE
+
+signature_column_names = list(test3_endo.obs.select_dtypes('number').columns)
+signature_column_names = list(filter(lambda x: x.startswith('Regulon('), signature_column_names))
+test3_endo_scores = test3_endo.obs[signature_column_names + ['EC_subclusters']]
+test3_endo_results = ((test3_endo_scores.groupby('EC_subclusters').mean() - test3_endo.obs[signature_column_names].mean()) / test3_endo.obs[signature_column_names].std()).stack().reset_index().rename(columns={'level_1': 'regulon', 0: 'Z'})
+test3_endo_results['regulon'] = list(map(lambda x: x[8:-1], test3_endo_results.regulon))
+
+signature_column_names = list(test3_endo[~test3_endo.obs['EC_subclusters'].isin(['EC5', 'EC6'])].obs.select_dtypes('number').columns)
+signature_column_names = list(filter(lambda x: x.startswith('Regulon('), signature_column_names))
+test3_endo_scores = test3_endo[~test3_endo.obs['EC_subclusters'].isin(['EC5', 'EC6'])].obs[signature_column_names + ['EC_subclusters']]
+test3_endo_results = ((test3_endo_scores.groupby('EC_subclusters').mean() - test3_endo[~test3_endo.obs['EC_subclusters'].isin(['EC5', 'EC6'])].obs[signature_column_names].mean()) / test3_endo[~test3_endo.obs['EC_subclusters'].isin(['EC5', 'EC6'])].obs[signature_column_names].std()).stack().reset_index().rename(columns={'level_1': 'regulon', 0: 'Z'})
+
+# 위를 Z-score가 아니라 일반 scale로 하는 것도 방법
+
+test3_endo_results['regulon'] = list(map(lambda x: x[8:-1], test3_endo_results.regulon))
+
+
+test3_endo_heatmap = pd.pivot_table(data=test3_endo_results[(test3_endo_results.Z >= 1.25)].sort_values('Z', ascending=False), index='EC_subclusters', columns='regulon', values='Z')
+
+ec1_regulon_list = list(test3_endo_results[test3_endo_results['EC_subclusters'] == 'EC_1'].sort_values('Z', ascending=False).iloc[:10]['regulon'].values)
+ec2_regulon_list = list(test3_endo_results[test3_endo_results['EC_subclusters'] == 'EC_2'].sort_values('Z', ascending=False).iloc[:10]['regulon'].values)
+ec3_regulon_list = list(test3_endo_results[test3_endo_results['EC_subclusters'] == 'EC_3'].sort_values('Z', ascending=False).iloc[:10]['regulon'].values)
+ec4_regulon_list = list(test3_endo_results[test3_endo_results['EC_subclusters'] == 'EC_4'].sort_values('Z', ascending=False).iloc[:10]['regulon'].values)
+
+test3_endo_heatmap = pd.pivot_table(data=test3_endo_results[test3_endo_results['regulon'].isin(ec1_regulon_list + ec2_regulon_list + ec3_regulon_list + ec4_regulon_list)].sort_values('Z', ascending=False), index='EC_subclusters', columns='regulon', values='Z')
+
+import matplotlib
+cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#104e8b", "#ffdab9", "#8b0a50"])
+
+sns.clustermap(test3_endo_heatmap.sort_index(ascending=False),
+               row_cluster=False,
+               method='ward',
+               metric='euclidean', z_score=None, standard_scale=None, cmap=cmap, xticklabels=True, yticklabels=True)
