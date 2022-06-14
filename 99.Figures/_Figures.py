@@ -9,21 +9,48 @@ sc.pl.umap(test3, color=['Age'], add_outline=False, legend_loc='right margin', c
 sns.despine()
 
 # Figure 1C
-test3.obs['Annotated Cell Types'] = test3.obs['celltype']
-sc.pl.umap(test3, color=['Annotated Cell Types'], add_outline=False, legend_loc='right margin', color_map=cmap, size=20, palette='Paired')
+leiden_to_celltype_dict = {'0': 'Vascular smooth muscle cells',
+'1': 'Vascular smooth muscle cells',
+'2': 'Vascular smooth muscle cells',
+'3': 'Fibroblasts',
+'4': 'Vascular smooth muscle cells',
+'5': 'Endothelial cells',
+'6': 'Fibroblasts',
+'7': 'Endothelial cells',
+'8': 'Vascular smooth muscle cells',
+'9': 'Fibroblasts',
+'10': 'B cells',
+'11': 'M\u03A6',
+'12': 'T cells',
+'13': 'Neuronal cells'}
+test3.obs['celltype'] = test3.obs['leiden_r05'].map(lambda x: leiden_to_celltype_dict[x]).astype('category')
+
+lin = ('Endothelial cells', 'Vascular smooth muscle cells', 'Fibroblasts', 'B cells', 'M\u03A6', 'T cells', 'Neuronal cells')
+test3.obs['Annotated Cell Types'] = test3.obs['celltype'].cat.reorder_categories(list(lin), ordered=True)
+
+sc.pl.umap(test3, color=['Annotated Cell Types'], add_outline=False, legend_loc='right margin', color_map=cmap, size=20, palette='tab20b')
 sns.despine()
 
 # Figure 1D
 celltype_marker = {'EC markers': ['Pecam1', 'Cdh5', 'Vwf', 'Nos3'],
-'SMC markers': ['Acta2', 'Tagln', 'Cnn1', 'Cnn2'],
+'VSMC markers': ['Acta2', 'Tagln', 'Cnn1', 'Cnn2'],
 'FB markers': ['Dpt', 'Col1a1', 'Col5a1', 'Pdgfra'],
 'Bc markers': ['Ighm', 'Cd19'],
 'MΦ markers':['Cd14', 'Cd68'],
-'Tc markers':['Cd3d', 'Cd3g']}
-reordered = ('Endothelial cells', 'Smooth muscle cells', 'Fibroblasts', 'B cells', 'M\u03A6', 'T cells')
+'Tc markers':['Cd3d', 'Cd3g'],
+'Neuronal markers':['Mbp', 'Cnp']}
+#reordered = ('Endothelial cells', 'Smooth muscle cells', 'Fibroblasts', 'B cells', 'M\u03A6', 'T cells', 'Neuronal')
 #reordered = ('Endothelial cells', 'Smooth muscle cells', 'Fibroblasts', 'B cells', 'Macrophages', 'T cells')
-test3.obs['Annotated Cell Types'] = test3.obs['Annotated Cell Types'].cat.reorder_categories(list(reordered), ordered=True)
-sc.pl.matrixplot(test3, celltype_marker, layer='magic', groupby='Annotated Cell Types', dendrogram=False, cmap=cmap, standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=45)
+#test3.obs['Annotated Cell Types'] = test3.obs['Annotated Cell Types'].cat.reorder_categories(list(reordered), ordered=True)
+combined_celltype_marker = list(x for xs in list(celltype_marker.values()) for x in xs)
+
+ax = plt.subplot(1,1,1)
+ax_dict = sc.pl.matrixplot(test3, celltype_marker, layer='magic', groupby='Annotated Cell Types', dendrogram=False, cmap=cmap, standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=45, show=False)
+ax_dict['mainplot_ax'].set_xticklabels(labels=combined_celltype_marker, fontstyle='italic', rotation=45)
+plt.xlabel("")
+plt.ylabel("Fold Enrichment (x)", fontsize=13)
+plt.tight_layout()
+sns.despine()
 
 # Figure 1E
 #colormap = dict(zip(list(test3.obs['Annotated Cell Types'].unique()), list(test3.uns['Annotated Cell Types_colors'])))
@@ -44,14 +71,15 @@ sns.despine()
 ###### Figure 2 ######
 
 # Fig2.A
-endo_leiden_to_celltype_dict = {'0': 'EC_1',
-'1': 'EC_4',
-'2': 'EC_2',
-'3': 'EC_3',
-'4': 'EC_5',
-'5': 'EC_6'}
+
+endo_leiden_to_celltype_dict = {'0': 'EC1',
+'1': 'EC4',
+'2': 'EC2',
+'3': 'EC3',
+'4': 'EC5',
+'5': 'EC6'}
 test3_endo.obs['Subpopulation of Endothelial Cells'] = test3_endo.obs['endo_leiden_r05'].map(lambda x: endo_leiden_to_celltype_dict[x]).astype('category')
-sc.pl.umap(test3_endo, color=['Subpopulation of Endothelial Cells'], add_outline=False, legend_loc='right margin', color_map=cmap, palette='Accent')
+sc.pl.umap(test3_endo, color=['Subpopulation of Endothelial Cells'], add_outline=False, legend_loc='right margin', color_map=cmap, palette='Set3')
 
 test3_endo.obs['Age'] = test3_endo.obs['batch']
 
