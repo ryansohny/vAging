@@ -150,3 +150,49 @@ sns.clustermap(test3_endo_heatmap.sort_index(ascending=False),
                row_cluster=False,
                method='ward',
                metric='euclidean', z_score=None, standard_scale=None, cmap=cmap, xticklabels=True, yticklabels=True)
+
+
+
+# Regulon to files
+regulons = {}
+for i,r in pd.DataFrame(lf.ra.Regulons,index=lf.ra.Gene).iteritems():
+    regulons[i] =  list(r[r==1].index.values)
+    
+adjacencies = pd.read_csv("test3_endo_adj.csv", index_col=False)
+lf = lp.connect(
+    "/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/EC_new2/test3_endo_pyscenic_output.loom",
+        mode='r+', validate=False)
+exprMat = pd.DataFrame(lf[:,:], index=lf.ra.Gene, columns=lf.ca.CellID).T
+auc_mtx = pd.DataFrame(lf.ca.RegulonsAUC, index=lf.ca.CellID)
+
+from pyscenic.utils import modules_from_adjacencies
+modules = list(modules_from_adjacencies(adjacencies, exprMat))
+
+"""
+type(modules) == list
+len(modules) == 7,580
+
+modules는 ctxcore.genesig.Regulon이라고하는 type들의 list로 구성되어 있다
+ex) type(modules[0]) == ctxcore.genesig.Regulon
+
+각각은 다음과 같이 구성되어 있다.
+ex) modules[601]
+Regulon(name='Regulon for Nfia', gene2weight=frozendict.frozendict({'Pam': 41.442711481206985, 'Gxylt2': 34.37402163050602, 'Nfix': 32.006428302211745,......)
+
+이들 각각의 element들은 다음과 같이 접근이 가능하다.
+
+modules[601].name == 'Regulon for Nfia'
+
+각각의 element의 이름들은 아래와 같다 (각각이 의미하는 것들 나중에 적어놓을 것)
+name
+gene2weight
+gene2occurrence
+transcription_factor
+context
+score
+nes
+orthologous_identity
+similarity_qvalue
+annotation
+
+"""
