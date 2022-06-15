@@ -154,16 +154,17 @@ sns.clustermap(test3_endo_heatmap.sort_index(ascending=False),
 
 
 # Regulon to files
-regulons = {}
-for i,r in pd.DataFrame(lf.ra.Regulons,index=lf.ra.Gene).iteritems():
-    regulons[i] =  list(r[r==1].index.values)
-
+import pandas as pd
+import loompy as lp
 adjacencies = pd.read_csv("test3_endo_adj.csv", index_col=False)
 lf = lp.connect(
     "/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/EC_new2/test3_endo_pyscenic_output.loom",
         mode='r+', validate=False)
 exprMat = pd.DataFrame(lf[:,:], index=lf.ra.Gene, columns=lf.ca.CellID).T
 auc_mtx = pd.DataFrame(lf.ca.RegulonsAUC, index=lf.ca.CellID)
+regulons = dict()
+for i,r in pd.DataFrame(lf.ra.Regulons,index=lf.ra.Gene).iteritems():
+    regulons[i] =  list(r[r==1].index.values)
 
 from pyscenic.utils import modules_from_adjacencies
 modules = list(modules_from_adjacencies(adjacencies, exprMat))

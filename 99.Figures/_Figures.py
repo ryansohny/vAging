@@ -1,3 +1,40 @@
+from anndata import AnnData
+import anndata
+from scipy import sparse, io
+import scipy
+import pandas as pd
+import scipy.io
+import os
+import scanpy as sc
+import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.colors
+matplotlib.use('TkAgg')
+import numpy as np
+import seaborn as sb
+import seaborn as sns
+import math
+import scanpy.external as sce
+import scrublet as scr
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
+from scipy.stats import chi2_contingency
+from scipy.stats import fisher_exact
+from statsmodels.stats.multitest import multipletests
+sns.set(font="Arial", font_scale=1, style='ticks')
+sc.settings.verbosity = 3
+plt.rcParams['figure.figsize'] = (6,6)
+#plt.rcParams['font.family'] = 'sans-serif'
+#plt.rcParams['font.sans-serif'] = 'Arial'
+cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#104e8b", "#ffdab9", "#8b0a50"])
+batch_palette=['#689aff', '#fdbf6f', '#b15928']
+%matplotlib
+%autoindent
+
+test3 = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3.h5ad")
+test3_endo = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3_endo.h5ad")
+
 cmap2 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#104e8b", "#000000", "#8b0a50"])
 ###### Figure 1 ######
 
@@ -44,13 +81,14 @@ celltype_marker = {'EC markers': ['Pecam1', 'Cdh5', 'Vwf', 'Nos3'],
 #test3.obs['Annotated Cell Types'] = test3.obs['Annotated Cell Types'].cat.reorder_categories(list(reordered), ordered=True)
 combined_celltype_marker = list(x for xs in list(celltype_marker.values()) for x in xs)
 
-ax = plt.subplot(1,1,1)
+
 ax_dict = sc.pl.matrixplot(test3, celltype_marker, layer='magic', groupby='Annotated Cell Types', dendrogram=False, cmap=cmap, standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=45, show=False)
 ax_dict['mainplot_ax'].set_xticklabels(labels=combined_celltype_marker, fontstyle='italic', rotation=45)
 plt.xlabel("")
-plt.ylabel("Fold Enrichment (x)", fontsize=13)
 plt.tight_layout()
-sns.despine()
+
+dp = sc.pl.dotplot(test3, celltype_marker, layer='magic', groupby='Annotated Cell Types', return_fig=True)
+dp.add_totals(size=1.5, color=['#393b79', '#9c9ede', '#b5cf6b', '#e7ba52', '#ad494a', '#7b4173', '#de9ed6']).legend(colorbar_title='log(SizeFactorNormlized+1)', width=1.5, show_size_legend=False, show_colorbar=False).style(cmap='Reds', dot_edge_color='black', dot_edge_lw=1, size_exponent=1.5, grid=True, x_padding=0.4, y_padding=0.6).swap_axes().show()
 
 # Figure 1E
 #colormap = dict(zip(list(test3.obs['Annotated Cell Types'].unique()), list(test3.uns['Annotated Cell Types_colors'])))
@@ -89,15 +127,23 @@ sc.pl.umap(test3_endo, color=['Age'], add_outline=False, legend_loc='right margi
 sns.despine()
 
 # Fig2.B,C
-lin = ('EC_1', 'EC_2', 'EC_3', 'EC_4', 'EC_5', 'EC_6')
+lin = ('EC1', 'EC2', 'EC3', 'EC4', 'EC5', 'EC6')
 #test3_endo.obs['leiden_r05']
 test3_endo.obs['Subpopulation of Endothelial Cells'] = test3_endo.obs['Subpopulation of Endothelial Cells'].cat.reorder_categories(list(lin), ordered=True)
 
 uni_ec = {'Universal EC markers': ["Pecam1", "Cdh5", 'Erg', 'Vwf', "Nos3", 'Procr', 'Icam1', 'Cd34', 'Cd36', ]}
-sc.pl.matrixplot(test3_endo, uni_ec, groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', return_fig=False, var_group_rotation=45)
+ax_dict = sc.pl.matrixplot(test3_endo, uni_ec, layer='magic', groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=0, show=False)
+ax_dict['mainplot_ax'].set_xticklabels(labels=list(uni_ec.values())[0], fontstyle='italic', rotation=45)
+
+# Diff version
+uni_ec = {'Universal EC markers': ["Pecam1", "Cdh5", "Kdr", 'Erg', 'Vwf', "Nos3", 'Procr', 'Icam1', 'Cd34', 'Cd36', ]}
+ax_dict = sc.pl.matrixplot(test3_endo, uni_ec, layer='magic', groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=0, show=False)
+ax_dict['mainplot_ax'].set_xticklabels(labels=list(uni_ec.values())[0], fontstyle='italic', rotation=45)
+
 
 ec_others = {'Pericyte': ['Rgs5', 'Cspg4', 'Kcnj8', 'Des'], 'Lymphatic EC': ['Reln', 'Flt4'], 'Vasa Vasorum': ['Ackr1', 'Lrg1']}
-sc.pl.matrixplot(test3_endo, ec_others, groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', return_fig=False, var_group_rotation=45)
+ax_dict2 = sc.pl.matrixplot(test3_endo, ec_others, layer='magic', groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=0, show=False)
+ax_dict2['mainplot_ax'].set_xticklabels(labels=list(x for xs in list(ec_others.values()) for x in xs), fontstyle='italic', rotation=45)
 
 # Fig2.D
 colormap = {'EC_1': '#8dd3c7',
@@ -174,23 +220,22 @@ sns.despine()
 
 # Fig2.F
 
-lin = ('0','1','2','3','4','5')
-lin = ('EC_1', 'EC_2', 'EC_3', 'EC_4')
-#test3_endo.obs['leiden_r05']
-
-
-test3_endo2 = test3_endo[~test3_endo.obs['Subpopulation of Endothelial Cells'].isin(['EC_5', 'EC_6'])].copy()
-colormap = {'EC_1': '#8dd3c7',
-            'EC_2': '#80b1d3',
-            'EC_3': '#fccde5',
-            'EC_4': '#bebada'}
+test3_endo2 = test3_endo[~test3_endo.obs['Subpopulation of Endothelial Cells'].isin(['EC5', 'EC6'])].copy()
+colormap = {'EC1': '#8dd3c7',
+            'EC2': '#80b1d3',
+            'EC3': '#fccde5',
+            'EC4': '#bebada'}
 sc.pl.umap(test3_endo2, color='Subpopulation of Endothelial Cells', palette=colormap) # update colormap
-lin = ('EC_1', 'EC_2', 'EC_3', 'EC_4')
+sns.despine()
+
+lin = ('EC1', 'EC2', 'EC3', 'EC4')
 test3_endo2.obs['Subpopulation of Endothelial Cells'] = test3_endo2.obs['Subpopulation of Endothelial Cells'].cat.reorder_categories(list(lin), ordered=True)
 
 sc.tl.rank_genes_groups(test3_endo2, 'Subpopulation of Endothelial Cells', method='wilcoxon', pts=True, key_added='Subpopulation of Endothelial Cells_rank_genes_groups')
 
-sc.pl.rank_genes_groups_heatmap(test3_endo2, n_genes=15, groupby='Subpopulation of Endothelial Cells', key='Subpopulation of Endothelial Cells_rank_genes_groups', groups=['EC_1', 'EC_2', 'EC_3', 'EC_4'], show_gene_labels=True, min_logfoldchange=1, dendrogram=False, cmap=cmap, use_raw=False, vmin=-1.5, vmax=1.5, swap_axes=True, show=False, var_group_rotation=0)
+ax_dict = sc.pl.rank_genes_groups_heatmap(test3_endo2, n_genes=15, groupby='Subpopulation of Endothelial Cells', key='Subpopulation of Endothelial Cells_rank_genes_groups', groups=['EC1', 'EC2', 'EC3', 'EC4'], show_gene_labels=True, min_logfoldchange=1, dendrogram=False, cmap=cmap, use_raw=False, vmin=-1.5, vmax=1.5, swap_axes=True, show=False, var_group_rotation=90)
+ax_dict['heatmap_ax'].set_yticklabels(labels=ax_dict['heatmap_ax'].get_yticklabels(), fontstyle='italic')
+
 result = test3_endo2.uns['Subpopulation of Endothelial Cells_rank_genes_groups']
 groups = result['names'].dtype.names
 deg_wilcoxon = pd.DataFrame({group + '_' + key: result[key][group] for group in groups for key in ['names', 'logfoldchanges', 'scores', 'pvals_adj']})
@@ -262,8 +307,20 @@ gp.barplot(go_EC_4.res2d,
            ofname='./GO_EC_subclsters/Barplot_EC_4_GO_Biological_Process.pdf')
 
 # Figure 3.A
+# Isl1, Twist1, Procr
+genes = ['Isl1', 'Twist1', 'Procr']
+ax = sc.pl.umap(test3_endo2, color=genes, color_map=cmap, layer='magic', show=False)
+for x in range( len(ax) ):
+    ax[x].set_title(genes[x], style='italic')
+sns.despine()
 
+# Cd34, Prom1, Nkx2-5
+genes = ['Cd34', 'Prom1', 'Nkx2-5']
+ax = sc.pl.umap(test3_endo2, color=genes, color_map=cmap, layer='magic', show=False)
+for x in range( len(ax) ):
+    ax[x].set_title(genes[x], style='italic')
 
+sns.despine()
 
 
 
@@ -278,12 +335,30 @@ sns.despine()
 
 
 # Research Letter Figures
-colormap = {'EC_1': '#8dd3c7',
-            'EC_2': '#80b1d3',
-            'EC_3': '#fccde5',
-            'EC_4': '#bebada'}
+colormap = {'EC1': '#8dd3c7',
+            'EC2': '#80b1d3',
+            'EC3': '#fccde5',
+            'EC4': '#bebada'}
 fig, axes = plt.subplots(1,3)
 sns.despine()
 sc.pl.umap(test3_endo2[test3_endo2.obs['batch'] == 'm01'], color='Subpopulation of Endothelial Cells', palette=colormap, show=False, legend_loc=None, size=200, title='1 month', ax=axes[0])
 sc.pl.umap(test3_endo2[test3_endo2.obs['batch'] == 'm10'], color='Subpopulation of Endothelial Cells', palette=colormap, show=False, legend_loc=None, size=200, title='10 months', ax=axes[1])
 sc.pl.umap(test3_endo2[test3_endo2.obs['batch'] == 'm20'], color='Subpopulation of Endothelial Cells', palette=colormap, show=False, legend_loc=None, size=200, title='20 months', ax=axes[2])
+
+
+
+# Figure X
+# 
+genes = ['Atf3', 'Atf4', 'Ddit3', 'Ppp1r15a']
+ax = sc.pl.umap(test3_endo2, color=genes, color_map=cmap, layer='magic', show=False, ncols=5)
+for x in range( len(ax) ):
+    ax[x].set_title(genes[x], style='italic')
+sns.despine()
+
+genes = ['Nfkb1', 'Nfkb2', 'Rela', 'Relb', 'Rel']
+ax = sc.pl.umap(test3_endo2, color=genes, color_map=cmap, layer='magic', show=False, ncols=5)
+for x in range( len(ax) ):
+    ax[x].set_title(genes[x], style='italic')
+
+sns.despine()
+
