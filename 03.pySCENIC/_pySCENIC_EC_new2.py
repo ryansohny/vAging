@@ -150,14 +150,14 @@ sns.clustermap(test3_endo_heatmap.sort_index(ascending=False),
                row_cluster=False,
                method='ward',
                metric='euclidean', z_score=None, standard_scale=None, cmap=cmap, xticklabels=True, yticklabels=True)
-
+  
 
 
 # Regulon to files
 regulons = {}
 for i,r in pd.DataFrame(lf.ra.Regulons,index=lf.ra.Gene).iteritems():
     regulons[i] =  list(r[r==1].index.values)
-    
+
 adjacencies = pd.read_csv("test3_endo_adj.csv", index_col=False)
 lf = lp.connect(
     "/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/EC_new2/test3_endo_pyscenic_output.loom",
@@ -167,6 +167,14 @@ auc_mtx = pd.DataFrame(lf.ca.RegulonsAUC, index=lf.ca.CellID)
 
 from pyscenic.utils import modules_from_adjacencies
 modules = list(modules_from_adjacencies(adjacencies, exprMat))
+
+tf = 'Isl1'
+tf_mods = [x for x in modules if x.transcription_factor == tf]
+for i, mod in enumerate(tf_mods):
+    print( f'{tf} module {str(i)}: {len(mod.genes)} genes' )
+
+print( f'{tf} regulon: {len(regulons[tf+"(+)"])} genes' )
+
 
 """
 type(modules) == list
