@@ -322,7 +322,50 @@ for x in range( len(ax) ):
 
 sns.despine()
 
+# Isl1 regulon
+dfh = open("/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/EC_new2/Isl1_regulon.txt", 'r')
+regulons = list()
+for i in dfh:
+    regulons.append(i.strip())
+isl1 = sc.get.obs_df(test3_endo2, keys=['Subpopulation of Endothelial Cells', *regulons])
+g = sns.clustermap(isl1.groupby('Subpopulation of Endothelial Cells').mean().T, 
+cmap='viridis',
+z_score=0, 
+standard_scale=None, 
+method='ward', 
+metric='euclidean')
+g.ax_heatmap.set_yticklabels(labels=g.ax_heatmap.get_yticklabels(), fontstyle='italic')
+g.cax.set_visible(False)
 
+# Twist1 regulon
+dfh = open("/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/EC_new2/Twist1_regulon.txt", 'r')
+regulons = list()
+for i in dfh:
+    regulons.append(i.strip())
+twist1 = sc.get.obs_df(test3_endo2, keys=['Subpopulation of Endothelial Cells', *regulons])
+g = sns.clustermap(twist1.groupby('Subpopulation of Endothelial Cells').mean().T, 
+cmap='viridis',
+z_score=0, 
+standard_scale=None, 
+method='ward', 
+metric='euclidean')
+g.ax_heatmap.set_yticklabels(labels=g.ax_heatmap.get_yticklabels(), fontstyle='italic')
+g.cax.set_visible(False)
+
+# Pparg regulon
+dfh = open("/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/EC_new2/Pparg_regulon.txt", 'r')
+regulons = list()
+for i in dfh:
+    regulons.append(i.strip())
+pparg = sc.get.obs_df(test3_endo2, keys=['Subpopulation of Endothelial Cells', *regulons])
+g = sns.clustermap(pparg.groupby('Subpopulation of Endothelial Cells').mean().T, 
+cmap='viridis',
+z_score=0, 
+standard_scale=None, 
+method='ward', 
+metric='euclidean')
+g.ax_heatmap.set_yticklabels(labels=g.ax_heatmap.get_yticklabels(), fontstyle='italic')
+g.cax.set_visible(False)
 
 # Figure 3.E
 df = test3_endo2.obs[['EC_subclusters', 'phase']]

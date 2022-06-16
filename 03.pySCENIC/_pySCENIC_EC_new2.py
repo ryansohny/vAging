@@ -176,6 +176,15 @@ for i, mod in enumerate(tf_mods):
 
 print( f'{tf} regulon: {len(regulons[tf+"(+)"])} genes' )
 
+for i,mod in enumerate( tf_mods ):
+    with open( tf+'_module_'+str(i)+'.txt', 'w') as f:
+        for item in mod.genes:
+            f.write("%s\n" % item)
+            
+with open( tf+'_regulon.txt', 'w') as f:
+    
+    for item in regulons[tf+'(+)']:
+        f.write("%s\n" % item)
 
 """
 type(modules) == list
@@ -205,3 +214,5 @@ similarity_qvalue
 annotation
 
 """
+
+a, b, c, d, e, f = [], [], [], [], [], []
