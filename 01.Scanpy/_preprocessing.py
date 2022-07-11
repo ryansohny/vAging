@@ -47,11 +47,11 @@ endo_leiden_to_celltype_dict = {'0': 'EC1',
 '5': 'EC6'}
 test3_endo.obs['Subpopulation of Endothelial Cells'] = test3_endo.obs['endo_leiden_r05'].map(lambda x: endo_leiden_to_celltype_dict[x]).astype('category')
 sc.pl.umap(test3_endo, color=['Subpopulation of Endothelial Cells'], add_outline=False, legend_loc='right margin', color_map=cmap, palette='Set3')
-test3_endo2 = test3_endo[~test3_endo.obs['Subpopulation of Endothelial Cells'].isin(['EC_5', 'EC_6'])].copy()
-colormap = {'EC_1': '#8dd3c7',
-            'EC_2': '#80b1d3',
-            'EC_3': '#fccde5',
-            'EC_4': '#bebada'}
+test3_endo2 = test3_endo[~test3_endo.obs['Subpopulation of Endothelial Cells'].isin(['EC5', 'EC6'])].copy()
+colormap = {'EC1': '#8dd3c7',
+            'EC2': '#80b1d3',
+            'EC3': '#fccde5',
+            'EC4': '#bebada'}
 sc.pl.umap(test3_endo2, color='Subpopulation of Endothelial Cells', palette=colormap) # update colormap
 lin = ('EC1', 'EC2', 'EC3', 'EC4')
 test3_endo2.obs['Subpopulation of Endothelial Cells'] = test3_endo2.obs['Subpopulation of Endothelial Cells'].cat.reorder_categories(list(lin), ordered=True)
