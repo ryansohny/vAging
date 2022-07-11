@@ -405,3 +405,15 @@ for x in range( len(ax) ):
 
 sns.despine()
 
+# Figure XX
+plot = sc.pl.StackedViolin(test3_endo2, ec4_markers, groupby='Subpopulation of Endothelial Cells', layer='magic', cmap='viridis', figsize=(7,5), return_fig=True, show=False)
+plot.swap_axes(swap_axes=True).show()
+sns.despine()
+plot.get_axes()['mainplot_ax'].set_xticklabels(labels=['EC1', 'EC2', 'EC3', 'EC4'], rotation=45)
+plot.get_axes()['mainplot_ax'].set_yticklabels(labels=ec4_markers, fontstyle='italic')
+
+plot = sc.pl.StackedViolin(test3_endo2, ec3_markers, groupby='Subpopulation of Endothelial Cells', layer='magic', cmap='viridis', figsize=(7,5), return_fig=True, show=False)
+plot.swap_axes(swap_axes=True).show()
+sns.despine()
+plot.get_axes()['mainplot_ax'].set_xticklabels(labels=['EC1', 'EC2', 'EC3', 'EC4'], rotation=45)
+plot.get_axes()['mainplot_ax'].set_yticklabels(labels=ec3_markers, fontstyle='italic')
