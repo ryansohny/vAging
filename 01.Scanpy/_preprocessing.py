@@ -15,7 +15,6 @@ import matplotlib
 import matplotlib.colors
 matplotlib.use('TkAgg')
 import numpy as np
-import seaborn as sb
 import seaborn as sns
 import math
 import scanpy.external as sce
