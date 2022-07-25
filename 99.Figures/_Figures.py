@@ -417,3 +417,11 @@ plot.swap_axes(swap_axes=True).show()
 sns.despine()
 plot.get_axes()['mainplot_ax'].set_xticklabels(labels=['EC1', 'EC2', 'EC3', 'EC4'], rotation=45)
 plot.get_axes()['mainplot_ax'].set_yticklabels(labels=ec3_markers, fontstyle='italic')
+
+ec1_markers = ['Twist1', 'Timp2', 'Mmp14', 'Mmp2', 'Timp4']
+ec1_markers = ['Timp2', 'Mmp14', 'Mmp2', 'Timp4']
+plot = sc.pl.StackedViolin(test3_endo2, ec1_markers, groupby='Subpopulation of Endothelial Cells', layer='magic', cmap='viridis', figsize=(7,5), return_fig=True, show=False)
+plot.swap_axes(swap_axes=True).show()
+sns.despine()
+plot.get_axes()['mainplot_ax'].set_xticklabels(labels=['EC1', 'EC2', 'EC3', 'EC4'], rotation=45)
+plot.get_axes()['mainplot_ax'].set_yticklabels(labels=ec1_markers, fontstyle='italic')
