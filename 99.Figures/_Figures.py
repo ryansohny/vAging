@@ -309,14 +309,14 @@ gp.barplot(go_EC_4.res2d,
 # Figure 3.A
 # Isl1, Twist1, Procr
 genes = ['Isl1', 'Twist1', 'Procr']
-ax = sc.pl.umap(test3_endo2, color=genes, color_map=cmap, layer='magic', show=False)
+ax = sc.pl.umap(test3_endo2, color=genes, color_map=cmap, layer='magic', show=False, ncols=len(genes))
 for x in range( len(ax) ):
     ax[x].set_title(genes[x], style='italic')
 sns.despine()
 
 # Cd34, Prom1, Nkx2-5
 genes = ['Cd34', 'Prom1', 'Nkx2-5']
-ax = sc.pl.umap(test3_endo2, color=genes, color_map=cmap, layer='magic', show=False)
+ax = sc.pl.umap(test3_endo2, color=genes, color_map=cmap, layer='magic', show=False, ncols=len(genes))
 for x in range( len(ax) ):
     ax[x].set_title(genes[x], style='italic')
 
