@@ -406,6 +406,7 @@ for x in range( len(ax) ):
 sns.despine()
 
 # Figure XX
+ec4_markers = ['Scarb1', 'Cd36', 'Tcf15', 'Fabp4', 'Lpl', 'Gpihbp1', 'Meox2']
 plot = sc.pl.StackedViolin(test3_endo2, ec4_markers, groupby='Subpopulation of Endothelial Cells', layer='magic', cmap='viridis', figsize=(7,5), return_fig=True, show=False)
 plot.swap_axes(swap_axes=True).show()
 sns.despine()
