@@ -392,10 +392,11 @@ sc.pl.umap(test3_endo2[test3_endo2.obs['batch'] == 'm20'], color='Subpopulation 
 
 # Figure X
 # 
-genes = ['Atf3', 'Atf4', 'Ddit3', 'Ppp1r15a']
+genes = ['Atf3', 'Atf4', 'Ddit3', 'Ppp1r15a','Nfkb1', 'Nfkb2', 'Rela', 'Relb', 'Rel', 'Icam1']
 ax = sc.pl.umap(test3_endo2, color=genes, color_map=cmap, layer='magic', show=False, ncols=5)
 for x in range( len(ax) ):
     ax[x].set_title(genes[x], style='italic')
+
 sns.despine()
 
 genes = ['Nfkb1', 'Nfkb2', 'Rela', 'Relb', 'Rel']
@@ -405,14 +406,22 @@ for x in range( len(ax) ):
 
 sns.despine()
 
+genes = ['Arhgap18', 'Vcam1']
+ax = sc.pl.umap(test3_endo2, color=genes, color_map=cmap, layer='magic', show=False, ncols=1)
+for x in range( len(ax) ):
+    ax[x].set_title(genes[x], style='italic')
+
+sns.despine()
+
 # Figure XX
-ec4_markers = ['Scarb1', 'Cd36', 'Tcf15', 'Fabp4', 'Lpl', 'Gpihbp1', 'Meox2']
+ec4_markers = ['Ncor1', 'Scarb1', 'Cd36', 'Tcf15', 'Fabp4', 'Lpl', 'Gpihbp1', 'Meox2']
 plot = sc.pl.StackedViolin(test3_endo2, ec4_markers, groupby='Subpopulation of Endothelial Cells', layer='magic', cmap='viridis', figsize=(7,5), return_fig=True, show=False)
 plot.swap_axes(swap_axes=True).show()
 sns.despine()
 plot.get_axes()['mainplot_ax'].set_xticklabels(labels=['EC1', 'EC2', 'EC3', 'EC4'], rotation=45)
 plot.get_axes()['mainplot_ax'].set_yticklabels(labels=ec4_markers, fontstyle='italic')
 
+ec3_markers = ['Atf3', 'Atf4', 'Ddit3', 'Ppp1r15a','Nfkb1', 'Nfkb2', 'Rela', 'Relb', 'Rel', 'Icam1']
 plot = sc.pl.StackedViolin(test3_endo2, ec3_markers, groupby='Subpopulation of Endothelial Cells', layer='magic', cmap='viridis', figsize=(7,5), return_fig=True, show=False)
 plot.swap_axes(swap_axes=True).show()
 sns.despine()
