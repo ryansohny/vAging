@@ -174,7 +174,7 @@ sc.pl.pca_variance_ratio(test3, n_pcs=100, log=False)
 #sc.pl.pca(test3, color=['batch'], legend_loc='right margin', size=8, add_outline=False, color_map='CMRmap', components=['1,2'])
 
 #sce.pp.bbknn default ==> n_pcs=50, neighbors_within_batch=3, trim=None, annoy_n_trees=10,
-sce.pp.bbknn(test3, batch_key='batch', n_pcs=20, neighbors_within_batch=20, trim=None) #####
+sce.pp.bbknn(test3, batch_key='batch', n_pcs=20, neighbors_within_batch=5, trim=None) #####
 sc.tl.umap(test3, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, init_pos='spectral', method='umap')
 #test3.uns['batch_colors'] = ['#2a2b2d', '#2da8d8', '#d9514e']
 test3.uns['batch_colors'] = ['#689aff', '#fdbf6f', '#b15928']
