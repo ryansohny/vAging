@@ -45,6 +45,8 @@ endo_leiden_to_celltype_dict = {'0': 'EC1',
 '4': 'EC5',
 '5': 'EC6'}
 test3_endo.obs['Subpopulation of Endothelial Cells'] = test3_endo.obs['endo_leiden_r05'].map(lambda x: endo_leiden_to_celltype_dict[x]).astype('category')
+lin = ('EC1', 'EC2', 'EC3', 'EC4', 'EC5', 'EC6')
+test3_endo.obs['Subpopulation of Endothelial Cells'] = test3_endo.obs['Subpopulation of Endothelial Cells'].cat.reorder_categories(list(lin), ordered=True)
 
 # Figure A
 
@@ -59,20 +61,38 @@ plt.savefig('./figures/Figure_A', dpi=600)
 
 # Figure B
 
-lin = ('EC1', 'EC2', 'EC3', 'EC4', 'EC5', 'EC6')
-#test3_endo.obs['leiden_r05']
-test3_endo.obs['Subpopulation of Endothelial Cells'] = test3_endo.obs['Subpopulation of Endothelial Cells'].cat.reorder_categories(list(lin), ordered=True)
-
-uni_ec = {'Universal EC markers': ["Pecam1", "Cdh5", 'Erg', 'Vwf', "Nos3", 'Procr', 'Icam1', 'Cd34', 'Cd36', ]}
+uni_ec = {'Universal EC markers': ["Pecam1", "Cdh5", 'Erg', 'Vwf', "Nos3", 'Procr', 'Icam1', 'Cd34', 'Cd36']}
 ax_dict = sc.pl.matrixplot(test3_endo, uni_ec, layer='magic', groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=0, show=False)
 ax_dict['mainplot_ax'].set_xticklabels(labels=list(uni_ec.values())[0], fontstyle='italic', rotation=45)
 
 # Diff version
 uni_ec = {'Universal EC markers': ["Pecam1", "Cdh5", "Kdr", 'Erg', 'Vwf', "Nos3", 'Procr', 'Icam1', 'Cd34', 'Cd36', ]}
-ax_dict = sc.pl.matrixplot(test3_endo, uni_ec, layer='magic', groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=0, show=False)
-ax_dict['mainplot_ax'].set_xticklabels(labels=list(uni_ec.values())[0], fontstyle='italic', rotation=45)
+ec_others = {'Pericyte markers': ['Rgs5', 'Cspg4', 'Kcnj8', 'Des'], 'Lymphatic EC markers': ['Reln', 'Flt4'], 'Vasa Vasorum markers': ['Ackr1', 'Lrg1']}
 
+fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+sns.despine()
+ax_dict1 = sc.pl.matrixplot(test3_endo, uni_ec, layer='magic', groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=0, show=False, ax=axes[0])
+ax_dict1['mainplot_ax'].set_xticklabels(labels=list(uni_ec.values())[0], fontstyle='italic', rotation=45)
+ax_dict1['color_legend_ax'].remove()
 
-ec_others = {'Pericyte': ['Rgs5', 'Cspg4', 'Kcnj8', 'Des'], 'Lymphatic EC': ['Reln', 'Flt4'], 'Vasa Vasorum': ['Ackr1', 'Lrg1']}
-ax_dict2 = sc.pl.matrixplot(test3_endo, ec_others, layer='magic', groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=0, show=False)
+ax_dict2 = sc.pl.matrixplot(test3_endo, ec_others, layer='magic', groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=0, show=False, ax=axes[1])
 ax_dict2['mainplot_ax'].set_xticklabels(labels=list(x for xs in list(ec_others.values()) for x in xs), fontstyle='italic', rotation=45)
+plt.tight_layout()
+
+
+
+# 아래 고치기
+fig, axes = plt.subplots(1, 2, figsize=(15, 6))
+sns.despine()
+mp1 = sc.pl.matrixplot(test3_endo, uni_ec, layer='magic', groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=0, return_fig=True, ax=axes[0])
+mp1.style(edge_color='black')
+mp1.show()
+mp1.get_axes()['mainplot_ax'].set_xticklabels(labels=list(uni_ec.values())[0], fontstyle='italic', rotation=45)
+mp1.get_axes()['color_legend_ax'].remove()
+
+mp2 = sc.pl.matrixplot(test3_endo, ec_others, layer='magic', groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=0, return_fig=True, ax=axes[1])
+mp2.var_group_rotation = 30
+mp2.show()
+mp2.get_axes()['mainplot_ax'].set_xticklabels(labels=list(x for xs in list(ec_others.values()) for x in xs), fontstyle='italic', rotation=45)
+mp2.get_axes()
+plt.tight_layout()
