@@ -89,6 +89,7 @@ mp1.style(edge_color='none')
 mp1.show()
 mp1.get_axes()['mainplot_ax'].set_xticklabels(labels=list(uni_ec.values())[0], fontstyle='italic', rotation=45)
 mp1.get_axes()['color_legend_ax'].remove()
+axes[0].axhline(y=0.71, xmin=0.015, xmax=0.645, linewidth=2.0, c="black")
 
 mp2 = sc.pl.matrixplot(test3_endo, ec_others, layer='magic', groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=0, return_fig=True, ax=axes[1])
 mp2.var_group_rotation = 30
@@ -102,5 +103,4 @@ axes[1].axhline(y=0.71, xmin=0.485, xmax=0.59, linewidth=2.0, c="black")
 axes[0].text(-0.1, 0.8, "A", size=20, weight='bold')
 axes[1].text(-0.1, 0.8, "B", size=20, weight='bold')
 
-plt.tight_layout()
 plt.tight_layout()
