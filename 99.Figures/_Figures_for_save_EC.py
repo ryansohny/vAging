@@ -82,10 +82,10 @@ plt.tight_layout()
 
 
 # 아래 고치기
-fig, axes = plt.subplots(1, 2, figsize=(15, 6))
+fig, axes = plt.subplots(1, 2, figsize=(17, 6))
 sns.despine()
 mp1 = sc.pl.matrixplot(test3_endo, uni_ec, layer='magic', groupby='Subpopulation of Endothelial Cells', dendrogram=False, cmap='viridis', standard_scale='var', colorbar_title='Scaled\nexpression', var_group_rotation=0, return_fig=True, ax=axes[0])
-mp1.style(edge_color='black')
+mp1.style(edge_color='none')
 mp1.show()
 mp1.get_axes()['mainplot_ax'].set_xticklabels(labels=list(uni_ec.values())[0], fontstyle='italic', rotation=45)
 mp1.get_axes()['color_legend_ax'].remove()
@@ -95,4 +95,6 @@ mp2.var_group_rotation = 30
 mp2.show()
 mp2.get_axes()['mainplot_ax'].set_xticklabels(labels=list(x for xs in list(ec_others.values()) for x in xs), fontstyle='italic', rotation=45)
 mp2.get_axes()
+axes[0].axhline(y=0.71, xmin=0.015, xmax=0.645, linewidth=3, c="black")
+
 plt.tight_layout()
