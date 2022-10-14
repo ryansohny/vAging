@@ -95,6 +95,12 @@ mp2.var_group_rotation = 30
 mp2.show()
 mp2.get_axes()['mainplot_ax'].set_xticklabels(labels=list(x for xs in list(ec_others.values()) for x in xs), fontstyle='italic', rotation=45)
 mp2.get_axes()
-axes[0].axhline(y=0.71, xmin=0.015, xmax=0.645, linewidth=3, c="black")
+axes[1].axhline(y=0.71, xmin=0.016, xmax=0.28, linewidth=2.0, c="black")
+axes[1].axhline(y=0.71, xmin=0.325, xmax=0.435, linewidth=2.0, c="black")
+axes[1].axhline(y=0.71, xmin=0.485, xmax=0.59, linewidth=2.0, c="black")
 
+axes[0].text(-0.1, 0.8, "A", size=20, weight='bold')
+axes[1].text(-0.1, 0.8, "B", size=20, weight='bold')
+
+plt.tight_layout()
 plt.tight_layout()
