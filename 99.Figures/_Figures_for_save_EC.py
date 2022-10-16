@@ -104,3 +104,12 @@ axes[0].text(-0.1, 0.8, "A", size=20, weight='bold')
 axes[1].text(-0.1, 0.8, "B", size=20, weight='bold')
 
 plt.tight_layout()
+
+
+test3_endo2 = test3_endo[~test3_endo.obs['Subpopulation of Endothelial Cells'].isin(['EC5', 'EC6'])].copy()
+colormap = {'EC1': '#8dd3c7',
+            'EC2': '#80b1d3',
+            'EC3': '#fccde5',
+            'EC4': '#bebada'}
+sc.pl.umap(test3_endo2, color='Subpopulation of Endothelial Cells', palette=colormap) # update colormap
+sns.despine()

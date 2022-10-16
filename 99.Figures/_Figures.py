@@ -146,13 +146,13 @@ ax_dict2 = sc.pl.matrixplot(test3_endo, ec_others, layer='magic', groupby='Subpo
 ax_dict2['mainplot_ax'].set_xticklabels(labels=list(x for xs in list(ec_others.values()) for x in xs), fontstyle='italic', rotation=45)
 
 # Fig2.D
-colormap = {'EC_1': '#8dd3c7',
-            'EC_2': '#80b1d3',
-            'EC_3': '#fccde5',
-            'EC_4': '#bebada'}
+colormap = {'EC1': '#8dd3c7',
+            'EC2': '#80b1d3',
+            'EC3': '#fccde5',
+            'EC4': '#bebada'}
 
-df = pd.concat([ test3_endo[~test3_endo.obs['Subpopulation of Endothelial Cells'].isin(['EC_5', 'EC_6'])].obs['Age'], \
-                test3_endo[~test3_endo.obs['Subpopulation of Endothelial Cells'].isin(['EC_5', 'EC_6'])].obs['Subpopulation of Endothelial Cells'] ], axis=1)
+df = pd.concat([ test3_endo[~test3_endo.obs['Subpopulation of Endothelial Cells'].isin(['EC5', 'EC6'])].obs['Age'], \
+                test3_endo[~test3_endo.obs['Subpopulation of Endothelial Cells'].isin(['EC5', 'EC6'])].obs['Subpopulation of Endothelial Cells'] ], axis=1)
 ax = pd.crosstab(df['Age'], df['Subpopulation of Endothelial Cells'], normalize=0).sort_values(by='Age', ascending=False).plot.barh(stacked=True, color=colormap)
 ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1.0))
 plt.xlabel('Fraction of EC Subpopulations')
@@ -162,7 +162,7 @@ sns.despine()
 
 
 # Fig2.E
-df = test3_endo[~test3_endo.obs['EC_subclusters'].isin(['EC_5', 'EC_6'])].obs[['batch', 'EC_subclusters']]
+df = test3_endo[~test3_endo.obs['EC_subclusters'].isin(['EC5', 'EC6'])].obs[['batch', 'EC_subclusters']]
 df_pivot = pd.crosstab(df['batch'], df['EC_subclusters'], normalize=False, margins=True)
 
 Chi2s_df, Pvalues_df = list(), list()
@@ -368,8 +368,8 @@ g.ax_heatmap.set_yticklabels(labels=g.ax_heatmap.get_yticklabels(), fontstyle='i
 g.cax.set_visible(False)
 
 # Figure 3.E
-df = test3_endo2.obs[['EC_subclusters', 'phase']]
-ax = pd.crosstab(df['EC_subclusters'], df['phase'], normalize='index', margins=True).plot.bar(stacked=True, rot=45)
+df = test3_endo2.obs[['Subpopulation of Endothelial Cells', 'phase']]
+ax = pd.crosstab(df['Subpopulation of Endothelial Cells'], df['phase'], normalize='index', margins=True).plot.bar(stacked=True, rot=45)
 ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1.0))
 ax.set_ylabel('Proportion of Cell Cycle Phase')
 plt.tight_layout()
