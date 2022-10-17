@@ -369,7 +369,7 @@ g.cax.set_visible(False)
 
 # Figure 3.E
 df = test3_endo2.obs[['Subpopulation of Endothelial Cells', 'phase']]
-ax = pd.crosstab(df['Subpopulation of Endothelial Cells'], df['phase'], normalize='index', margins=True).plot.bar(stacked=True, rot=45)
+ax = pd.crosstab(df['EC_subclusters'], df['phase'], normalize='index', margins=True).plot.bar(stacked=True, rot=45)
 ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1.0))
 ax.set_ylabel('Proportion of Cell Cycle Phase')
 plt.tight_layout()
