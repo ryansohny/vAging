@@ -1173,6 +1173,24 @@ test3_endo2.obs['EC_subclusters'] = test3_endo2.obs['EC_subclusters'].cat.reorde
 df = test3_endo2.obs[['EC_subclusters', 'phase']]
 ax = pd.crosstab(df['EC_subclusters'], df['phase'], normalize='index', margins=True).plot.bar(stacked=True)
 
+# 2022-10-12 : Wilcoxon rank-sum test
+## By magic-imputed counts (We chose this)
+sc.tl.rank_genes_groups(test3_endo2, 'Subpopulation of Endothelial Cells', groups=['EC3', 'EC4'], reference='EC3', method='wilcoxon', pts=True, key_added='SEC_magic_rank_genes_groups', layer='magic', use_raw=False)
+result = test3_endo2.uns['SEC_magic_rank_genes_groups']
+groups = result['names'].dtype.names
+deg_wilcoxon = pd.DataFrame({group + '_' + key: result[key][group] for group in groups for key in ['names', 'logfoldchanges', 'scores', 'pvals_adj']})
+deg_wilcoxon[deg_wilcoxon['EC4_names'].isin(['Arhgap18', 'Tcf15', 'Fabp4', 'Gpihbp1', 'Meox2', 'Cd36', 'Scarb1', 'Lpl'])]
+
+
+## By magic-imputed and exponentiated counts
+test3_endo2.layers['magic_exp'] = np.expm1(test3_endo2.layers['magic'])
+sc.tl.rank_genes_groups(test3_endo2, 'Subpopulation of Endothelial Cells', groups=['EC3', 'EC4'], reference='EC3', method='wilcoxon', pts=True, key_added='SEC_magicE_rank_genes_groups', layer='magic_exp', use_raw=False)
+result = test3_endo2.uns['SEC_magicE_rank_genes_groups']
+groups = result['names'].dtype.names
+deg_wilcoxon = pd.DataFrame({group + '_' + key: result[key][group] for group in groups for key in ['names', 'logfoldchanges', 'scores', 'pvals_adj']})
+deg_wilcoxon[deg_wilcoxon['EC4_names'].isin(['Arhgap18', 'Tcf15', 'Fabp4', 'Gpihbp1', 'Meox2', 'Cd36', 'Scarb1', 'Lpl'])]
+
+
 ################# EC subclusters ################# Chi-squared test (w/o EC_5 and EC_6)
 df = test3_endo2.obs[['batch', 'EC_subclusters']]
 df_pivot = pd.crosstab(df['batch'], df['EC_subclusters'], normalize=False, margins=True)

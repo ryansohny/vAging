@@ -112,7 +112,6 @@ for c,num in zip(cats, range(1,len(cats)+1)):
     ax.set_xlabel('')
     adjust_text(ax.texts, autoalign='xy', ha='right', va='bottom', arrowprops=dict(arrowstyle='-',color='lightgrey'), precision=0.001 )
 
-
 sns.despine()
 
 
