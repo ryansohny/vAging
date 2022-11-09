@@ -241,10 +241,10 @@ groups = result['names'].dtype.names
 deg_wilcoxon = pd.DataFrame({group + '_' + key: result[key][group] for group in groups for key in ['names', 'logfoldchanges', 'scores', 'pvals_adj']})
 
 
-ec_1 = list(deg_wilcoxon[(deg_wilcoxon['EC_1_logfoldchanges'] > 1) & (deg_wilcoxon['EC_1_pvals_adj'] < 0.05)].iloc[0:15]['EC_1_names'].values)
-ec_2 = list(deg_wilcoxon[(deg_wilcoxon['EC_2_logfoldchanges'] > 1) & (deg_wilcoxon['EC_2_pvals_adj'] < 0.05)].iloc[0:15]['EC_2_names'].values)
-ec_3 = list(deg_wilcoxon[(deg_wilcoxon['EC_3_logfoldchanges'] > 1) & (deg_wilcoxon['EC_3_pvals_adj'] < 0.05)].iloc[0:15]['EC_3_names'].values)
-ec_4 = list(deg_wilcoxon[(deg_wilcoxon['EC_4_logfoldchanges'] > 1) & (deg_wilcoxon['EC_4_pvals_adj'] < 0.05)].iloc[0:15]['EC_4_names'].values)
+ec_1 = list(deg_wilcoxon[(deg_wilcoxon['EC1_logfoldchanges'] > 1) & (deg_wilcoxon['EC1_pvals_adj'] < 0.05)].iloc[0:15]['EC1_names'].values)
+ec_2 = list(deg_wilcoxon[(deg_wilcoxon['EC2_logfoldchanges'] > 1) & (deg_wilcoxon['EC2_pvals_adj'] < 0.05)].iloc[0:15]['EC2_names'].values)
+ec_3 = list(deg_wilcoxon[(deg_wilcoxon['EC3_logfoldchanges'] > 1) & (deg_wilcoxon['EC3_pvals_adj'] < 0.05)].iloc[0:15]['EC3_names'].values)
+ec_4 = list(deg_wilcoxon[(deg_wilcoxon['EC4_logfoldchanges'] > 1) & (deg_wilcoxon['EC4_pvals_adj'] < 0.05)].iloc[0:15]['EC4_names'].values)
 
 import gseapy as gp
 gp.get_library_name(organism='Mouse')
@@ -252,10 +252,9 @@ gp.get_library_name(organism='Mouse')
 go_EC_1 = gp.enrichr(gene_list=list(ec_1),
                      gene_sets=['GO_Biological_Process_2021'],
                      organism='Mouse',
-                     description='GO Biological Process',
-                     outdir='./GO_EC_subclsters',
+                     outdir=None,
                      cutoff=0.05,
-                     no_plot=True)
+                     no_plot=True) # 이거 background option이 있는데 (?gp.enrichr) 확인 꼭 해봐야 함!
 gp.barplot(go_EC_1.res2d,
            title='GO Biological Process',
            column='Adjusted P-value',
