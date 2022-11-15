@@ -168,6 +168,7 @@ for i,r in pd.DataFrame(lf.ra.Regulons,index=lf.ra.Gene).iteritems():
 from pyscenic.utils import modules_from_adjacencies
 modules = list(modules_from_adjacencies(adjacencies, exprMat))
 
+# Isl1
 tf = 'Isl1'
 tf_mods = [x for x in modules if x.transcription_factor == tf]
 for i, mod in enumerate(tf_mods):
@@ -184,6 +185,62 @@ with open( tf+'_regulon.txt', 'w') as f:
     
     for item in regulons[tf+'(+)']:
         f.write("%s\n" % item)
+
+# Twist1
+tf = 'Twist1'
+tf_mods = [x for x in modules if x.transcription_factor == tf]
+for i, mod in enumerate(tf_mods):
+    print( f'{tf} module {str(i)}: {len(mod.genes)} genes' )
+
+print( f'{tf} regulon: {len(regulons[tf+"(+)"])} genes' )
+
+for i,mod in enumerate( tf_mods ):
+    with open( tf+'_module_'+str(i)+'.txt', 'w') as f:
+        for item in mod.genes:
+            f.write("%s\n" % item)
+            
+with open( tf+'_regulon.txt', 'w') as f:
+    
+    for item in regulons[tf+'(+)']:
+        f.write("%s\n" % item)
+        
+# Tgif1
+tf = 'Tgif1'
+tf_mods = [x for x in modules if x.transcription_factor == tf]
+for i, mod in enumerate(tf_mods):
+    print( f'{tf} module {str(i)}: {len(mod.genes)} genes' )
+
+print( f'{tf} regulon: {len(regulons[tf+"(+)"])} genes' )
+
+for i,mod in enumerate( tf_mods ):
+    with open( tf+'_module_'+str(i)+'.txt', 'w') as f:
+        for item in mod.genes:
+            f.write("%s\n" % item)
+            
+with open( tf+'_regulon.txt', 'w') as f:
+    
+    for item in regulons[tf+'(+)']:
+        f.write("%s\n" % item)
+
+# Tgif2
+tf = 'Tgif2'
+tf_mods = [x for x in modules if x.transcription_factor == tf]
+for i, mod in enumerate(tf_mods):
+    print( f'{tf} module {str(i)}: {len(mod.genes)} genes' )
+
+print( f'{tf} regulon: {len(regulons[tf+"(+)"])} genes' )
+
+for i,mod in enumerate( tf_mods ):
+    with open( tf+'_module_'+str(i)+'.txt', 'w') as f:
+        for item in mod.genes:
+            f.write("%s\n" % item)
+            
+with open( tf+'_regulon.txt', 'w') as f:
+    
+    for item in regulons[tf+'(+)']:
+        f.write("%s\n" % item)
+
+
 
 """
 type(modules) == list
