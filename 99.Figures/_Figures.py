@@ -29,14 +29,26 @@ plt.rcParams['figure.figsize'] = (6,6)
 #plt.rcParams['font.sans-serif'] = 'Arial'
 cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#104e8b", "#ffdab9", "#8b0a50"])
 batch_palette=['#689aff', '#fdbf6f', '#b15928']
-%matplotlib
-%autoindent
+#%matplotlib
+#%autoindent
 
-test3 = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3.h5ad")
-test3_endo = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3_endo.h5ad")
+#test3 = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3.h5ad")
+#test3_endo = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3_endo.h5ad")
+test3_endo = sc.read_h5ad("/Users/mhryansohn/Desktop/01.Workspace/01.Projects/01.Vascular_Aging/test3_endo.h5ad")
+
 
 cmap2 = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#104e8b", "#000000", "#8b0a50"])
 ###### Figure 1 ######
+
+
+endo_leiden_to_celltype_dict = {'0': 'EC1',
+'1': 'EC4',
+'2': 'EC2',
+'3': 'EC3',
+'4': 'EC5',
+'5': 'EC6'}
+test3_endo.obs['Subpopulation of Endothelial Cells'] = test3_endo.obs['endo_leiden_r05'].map(lambda x: endo_leiden_to_celltype_dict[x]).astype('category')
+sc.pl.umap(test3_endo, color=['Subpopulation of Endothelial Cells'], add_outline=False, legend_loc='right margin', color_map=cmap, palette='Set3')
 
 # Figure 1B
 test3.obs['Age'] = test3.obs['batch']
