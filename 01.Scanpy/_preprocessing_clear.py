@@ -157,7 +157,7 @@ sc.pl.umap(test3, color=['batch'], add_outline=False, legend_loc='right margin',
 
 sc.tl.rank_genes_groups(test3, 'leiden_r05', method='wilcoxon', corr_method='benjamini-hochberg', use_raw=True, pts=True) # key_added=''
 sc.pl.rank_genes_groups(test3, n_genes=5, sharey=False)
-sc.pl.rank_
+
 
 ########################################################################################
 # ComBat batch correction test (2022-09-26)
@@ -177,10 +177,105 @@ test3_combat.uns['batch_colors'] = ['#689aff', '#fdbf6f', '#b15928']
 sc.pl.umap(test3_combat, color=['batch'], add_outline=False, legend_loc='right margin', size=20)
 
 ########################################################################################
-
-
-
-
 test3 = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3.h5ad")
-test3_endo = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3_endo.h5ad")
 
+leiden_to_celltype_dict = {'0': 'vSMC',
+'1': 'vSMC',
+'2': 'vSMC',
+'3': 'FB',
+'4': 'vSMC',
+'5': 'EC',
+'6': 'FB',
+'7': 'EC',
+'8': 'vSMC',
+'9': 'FB',
+'10': 'Bc',
+'11': 'M\u03A6',
+'12': 'Tc',
+'13': 'Neuronal'}
+test3.obs['celltype'] = test3.obs['leiden_r05'].map(lambda x: leiden_to_celltype_dict[x]).astype('category')
+sc.pl.umap(test3, color=['Klf4', 'batch', 'celltype'], add_outline=False, legend_loc='right margin', color_map='viridis')
+
+
+########################################################################################################################
+# Only Endothelial cells
+import rpy2.rinterface_lib.callbacks
+import logging
+from rpy2.robjects import pandas2ri
+import anndata2ri
+pandas2ri.activate()
+anndata2ri.activate()
+%load_ext rpy2.ipython
+%%R
+library(scran)
+library(dplyr)
+
+
+
+
+
+
+%config InlineBackend.figure_format = 'retina'
+
+test3_endo = anndata.AnnData(X=test3[test3.obs['leiden_r05'].isin(['5', '7'])].layers['counts'], obs=test3[test3.obs['leiden_r05'].isin(['5', '7'])].obs, var=test3[test3.obs['leiden_r05'].isin(['5', '7'])].var)
+test3_endo.layers["counts"] = test3_endo.X.copy()
+
+# Doublet information
+test3_endo.obs['Doublet'] = integrated.obs['Doublet'].loc[test3_endo.obs.index]
+
+# Doublet removal
+#test3_endo = test3_endo[test3_endo.obs['Doublet'] == 'False']
+
+adata_pp = test3_endo.copy()
+sc.pp.normalize_per_cell(adata_pp, counts_per_cell_after=1e6)
+sc.pp.log1p(adata_pp)
+sc.tl.pca(adata_pp, n_comps=15) ## 여기서 이 n_component의 숫자를 늘리면 size_factors를 estimation하는 데 도움이 될까?
+sc.pp.neighbors(adata_pp)
+sc.tl.leiden(adata_pp, key_added='groups', resolution=0.5)
+input_groups = adata_pp.obs['groups']
+data_mat = test3_endo.X.T
+%%R -i data_mat -i input_groups -o size_factors
+size_factors = BiocGenerics::sizeFactors(computeSumFactors(SingleCellExperiment::SingleCellExperiment(list(counts=data_mat)), clusters=input_groups, min.mean=0.1))
+
+
+
+del adata_pp
+test3_endo.obs['size_factors'] = size_factors
+
+test3_endo.X /= test3_endo.obs['size_factors'].values[:, None]
+test3_endo.X = scipy.sparse.csr_matrix(test3_endo.X) #왜 이게 새로 들어가야될까????? # 아니면 ERRROR 남 (highly_variable_genes에서)
+
+test3_endo.layers['scran'] = test3_endo.X
+
+sc.pp.log1p(test3_endo) # works on anndata.X
+#integrated.X = scipy.sparse.csr_matrix(integrated.X)
+test3_endo.layers['scran_log1p'] = test3_endo.X
+
+test3_endo.raw = test3_endo ## ==> log transforamtion 된 것이 raw로 들어가게 됨.
+
+sc.pp.highly_variable_genes(test3_endo)
+test3_endo.var['highly_variable'].value_counts() # 2,612 ==> 2021-08-20, # 2,941 ==> 2021-09-28
+
+sc.pp.filter_genes(test3_endo, min_cells=0) # integrated.var에 n_cells 추가 ==> test3에서 이루어졌던 n_cells UPDATE
+
+sc.pp.scale(test3_endo, max_value=10) # ... as `zero_center=True`, sparse input is densified and may lead to large memory consumption
+# adata.raw.X의 mean 과 std를 output함
+sc.tl.pca(test3_endo, n_comps=100, use_highly_variable=True, svd_solver='arpack')
+
+#sce.pp.bbknn default ==> n_pcs=50, neighbors_within_batch=3, trim=None, annoy_n_trees=10,
+sce.pp.bbknn(test3_endo, batch_key='batch', n_pcs=20, neighbors_within_batch=5, trim=None) #####
+#sce.pp.bbknn(test3_endo, batch_key='batch', n_pcs=50, neighbors_within_batch=5, trim=None)
+sc.tl.umap(test3_endo, min_dist=0.5, spread=1.0, n_components=2, alpha=1.0, gamma=1.0, init_pos='spectral', method='umap')
+#test3_endo.uns['batch_colors'] = ['#2a2b2d', '#2da8d8', '#d9514e']
+sc.tl.leiden(test3_endo, resolution=0.5, key_added='endo_leiden_r05')
+sc.tl.leiden(test3_endo, resolution=1.0, key_added='endo_leiden_r10')
+
+test3_endo.uns['batch_colors'] = ['#689aff', '#fdbf6f', '#b15928']
+
+sc.pl.umap(test3_endo, color=['endo_leiden_r05', 'endo_leiden_r10', 'leiden_r05'], add_outline=False, legend_loc='right margin', size=150, color_map='CMRmap')
+sc.pl.umap(test3_endo, color=['batch', 'phase', 'percent_mito'], add_outline=False, legend_loc='right margin', size=150, color_map='CMRmap')
+sc.pl.umap(test3_endo, color=['batch'], group_by='Month1', add_outline=False, legend_loc='right margin', size=150, color_map='CMRmap')
+
+sc.tl.rank_genes_groups(test3_endo, 'endo_leiden_r05', method='wilcoxon', pts=True, key_added='endo_leiden_r05_rank_genes_groups')
+#sc.pl.rank_genes_groups(test3_endo, n_genes=5, sharey=False)
+sc.pl.rank_genes_groups_heatmap(test3_endo, n_genes=10, min_logfoldchange=2, cmap='cividis', show_gene_labels=True, key='endo_leiden_r05_rank_genes_groups')
