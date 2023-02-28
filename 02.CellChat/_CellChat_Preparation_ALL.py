@@ -41,13 +41,21 @@ test3 = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.
 test3.X = scipy.sparse.csr_matrix.toarray(test3.layers['scran_log1p'])
 
 # CellChat Input
-endo_leiden_to_celltype_dict = {'0': 'EC1',
-'1': 'EC4',
-'2': 'EC2',
-'3': 'EC3',
-'4': 'EC5',
-'5': 'EC6'}
-test3_endo.obs['EC_sub'] = test3_endo.obs['endo_leiden_r05'].map(lambda x: endo_leiden_to_celltype_dict[x]).astype('category')
-test3_endo2 = test3_endo[~test3_endo.obs['EC_sub'].isin(['EC5', 'EC6'])].copy()
 
-test3_endo2.write(filename="/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/CellChat/test3_endo2.h5ad")
+leiden_to_celltype_dict = {'0': 'vSMC1',
+'1': 'vSMC2',
+'2': 'vSMC3',
+'3': 'FB1',
+'4': 'vSMC4',
+'5': 'EC1',
+'6': 'FB2',
+'7': 'EC2',
+'8': 'vSMC5',
+'9': 'FB3',
+'10': 'Bc',
+'11': 'Mpahge',
+'12': 'Tc',
+'13': 'Neuronal'}
+test3.obs['celltype'] = test3.obs['leiden_r05'].map(lambda x: leiden_to_celltype_dict[x]).astype('category')
+
+test3.write(filename="/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/CellChat/test3_forCellChat.h5ad")
