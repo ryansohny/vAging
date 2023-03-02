@@ -87,6 +87,7 @@ cellchat@netP$pathways # ==> All the signaling pathways showing significant comm
 
 pathways.show <- c("COLLAGEN") 
 pathways.show <- c("CDH5")
+pathways.show <- c("THBS")
 
 # Hierarchy plot
 # Here we define `vertex.receive` so that the left portion of the hierarchy plot shows signaling to fibroblast and the right portion shows signaling to immune cells 

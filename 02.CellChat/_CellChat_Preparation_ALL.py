@@ -53,7 +53,7 @@ leiden_to_celltype_dict = {'0': 'vSMC1',
 '8': 'vSMC5',
 '9': 'FB3',
 '10': 'Bc',
-'11': 'Mpahge',
+'11': 'Mphage',
 '12': 'Tc',
 '13': 'Neuronal'}
 test3.obs['celltype'] = test3.obs['leiden_r05'].map(lambda x: leiden_to_celltype_dict[x]).astype('category')
