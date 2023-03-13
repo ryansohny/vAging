@@ -28,6 +28,27 @@ from adjustText import adjust_text
 %matplotlib
 sns.set(font="Arial", font_scale=1, style='ticks')
 
+# pySCENIC input file generation
+test3_vsmc = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3_vsmc.h5ad")
+test3_vsmc.X = test3_vsmc.layers['counts']
+
+row_attrs = { 
+    "Gene": np.array(test3_vsmc.var.index) ,
+}
+col_attrs = { 
+    "CellID":  np.array(test3_vsmc.obs.index) ,
+    "nGene": np.array( np.sum(test3_vsmc.X.transpose()>0 , axis=0)).flatten() ,
+    "nUMI": np.array( np.sum(test3_vsmc.X.transpose() , axis=0)).flatten() ,
+}
+
+lp.create( 'test3_vsmc.loom', test3_vsmc.X.transpose(), row_attrs, col_attrs )
+
+# GRN inference using the GRNBoost2 algorithm (from the Command-Line Interface (CLI) version of pySCENIC)
+
+# 
+
+
+# Second time
 lf = lp.connect(
     "/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/EC_new2/test3_endo_pyscenic_output.loom",
     mode='r+', validate=False)
