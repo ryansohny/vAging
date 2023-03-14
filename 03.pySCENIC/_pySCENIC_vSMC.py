@@ -44,47 +44,84 @@ col_attrs = {
 lp.create( 'test3_vsmc.loom', test3_vsmc.X.transpose(), row_attrs, col_attrs )
 
 # GRN inference using the GRNBoost2 algorithm (from the Command-Line Interface (CLI) version of pySCENIC)
+'''
+database_dir='/data/Projects/phenomata/01.Projects/11.Vascular_Aging/Database/pySCENIC'
+pyscenic grn \
+test3_vsmc.loom \
+${database_dir}/mm_mgi_tfs.txt \
+-o test3_vsmc_adj.csv \
+--num_workers 15
+'''
 
-# 
+# Regulon prediction (cisTarget)
+'''
+database_dir='/data/Projects/phenomata/01.Projects/11.Vascular_Aging/Database/pySCENIC'
+pyscenic ctx \
+test3_vsmc_adj.csv \
+${database_dir}/mm10__refseq-r80__10kb_up_and_down_tss.mc9nr.feather \
+${database_dir}/mm10__refseq-r80__500bp_up_and_100bp_down_tss.mc9nr.feather \
+--annotations_fname ${database_dir}/motifs-v9-nr.mgi-m0.001-o0.0.tbl \
+--expression_mtx_fname test3_vsmc.loom \
+--output test3_vsmc_reg.csv \
+--mask_dropouts \
+--num_workers 15
+'''
 
+# Cellular enrichment using AUCell
+nGenesDetectedPerCell = np.sum(test3_vsmc.X>0, axis=1)
+percentiles = pd.Series(np.quantile(nGenesDetectedPerCell, [0.01, 0.05, 0.10, 0.50, 1]), index=np.array([0.01, 0.05, 0.10, 0.50, 1]))
+fig, ax = plt.subplots(1, 1, figsize=(8, 5), dpi=150, constrained_layout=True)
+sns.histplot(data=nGenesDetectedPerCell, legend=False)
+for i, x in enumerate(percentiles):
+    ax.axvline(x=x, ymin=0, ymax=0.98, color='red')
+    ax.text(x=x, y=ax.get_ylim()[1], s=f'{int(x)} ({percentiles.index.values[i]*100}%)', color='red', rotation=20, size='x-small',rotation_mode='anchor' )
+sns.despine(ax=ax)
+ax.set_xlabel('# of Genes')
+ax.set_ylabel('# of Cells')
 
-# Second time
+# Combine pySCENIC and ScanPy
 lf = lp.connect(
-    "/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/EC_new2/test3_endo_pyscenic_output.loom",
+    "/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/vSMC/test3_vsmc_pyscenic_output.loom",
     mode='r+', validate=False)
 lf.ca.keys()
 # ['CellID', 'RegulonsAUC', 'nGene', 'nUMI']
 lf.ra.keys()
 # ['Gene', 'Regulons']
 lf.attrs.keys()
-# ['CreationDate', 'LOOM_SPEC_VERSION', 'MetaData', 'last_modified']
+# ['CreationDate', 'LOOM_SPEC_VERSION', 'MetaData']
 
 auc_mtx = pd.DataFrame(lf.ca.RegulonsAUC, index=lf.ca.CellID)
 auc_mtx.columns = auc_mtx.columns.str.replace('\(', '_(')
 
-test3_endo = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3_endo.h5ad")
-test3_endo = test3_endo[test3_endo.obs['endo_leiden_r05'].isin(['0', '1', '2', '3'])]
+test3_vsmc = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3_vsmc.h5ad")
+#test3_endo = test3_endo[test3_endo.obs['endo_leiden_r05'].isin(['0', '1', '2', '3'])]
 
-sig = load_signatures(
-    '/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/EC_new2/test3_endo_reg.csv')
-test3_endo = add_scenic_metadata(test3_endo, auc_mtx, sig)  # AUCell score가 test3_endo에 추가된다.
+sig = load_signatures('/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/vSMC/test3_vsmc_reg.csv')
 
+test3_vsmc = add_scenic_metadata(test3_vsmc, auc_mtx, sig)  # AUCell score가 test3_endo에 추가된다.
+
+'''
 endo_leiden_to_celltype_dict = {'0': 'EC1',
 '1': 'EC4',
 '2': 'EC2',
 '3': 'EC3'}
+'''
 
 test3_endo.obs['EC_subclusters'] = test3_endo.obs['endo_leiden_r05'].map(lambda x: endo_leiden_to_celltype_dict[x]).astype('category')
 
 reordered = ('EC1', 'EC2', 'EC3', 'EC4')
 test3_endo.obs['EC_subclusters'] = test3_endo.obs['EC_subclusters'].cat.reorder_categories(list(reordered), ordered=True)
 
-cellAnnot = test3_endo.obs[['batch', 'EC_subclusters']]
-rss_EC_subclusters = regulon_specificity_scores(auc_mtx, cellAnnot['EC_subclusters'])
 
-cats = sorted(list(set(cellAnnot['EC_subclusters'])))
 
-data = rss_EC_subclusters.T['EC1'].sort_values(ascending=False)[0:rss_EC_subclusters.shape[1]]
+
+
+cellAnnot = test3_vsmc.obs[['batch', 'vsmc_leiden_r05']]
+rss_vSMC_subclusters = regulon_specificity_scores(auc_mtx, cellAnnot['vsmc_leiden_r05'])
+
+cats = sorted(list(set(cellAnnot['vsmc_leiden_r05'])))
+
+#data = rss_vSMC_subclusters.T['0'].sort_values(ascending=False)[0:rss_vSMC_subclusters.shape[1]]
 
 # https://github.com/aertslab/pySCENIC/blob/master/src/pyscenic/plotting.py
 from math import ceil, floor
@@ -116,16 +153,11 @@ def plot_rss(rss, cell_type, top_n=5, max_n=None, ax=None):
             verticalalignment='center',
         )
 
-
-
-
-
 fig = plt.figure(figsize=(15, 8))
-
 for c,num in zip(cats, range(1,len(cats)+1)):
-    x = rss_EC_subclusters.T[c]
-    ax = fig.add_subplot(1,4,num)
-    plot_rss(rss_EC_subclusters, c, top_n=5, max_n=None, ax=ax)
+    x = rss_vSMC_subclusters.T[c]
+    ax = fig.add_subplot(1,6,num)
+    plot_rss(rss_vSMC_subclusters, c, top_n=5, max_n=None, ax=ax)
     ax.set_ylim( x.min()-(x.max()-x.min())*0.05 , x.max()+(x.max()-x.min())*0.05 )
     for t in ax.texts:
         t.set_fontsize(12)
