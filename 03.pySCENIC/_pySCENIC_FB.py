@@ -27,29 +27,32 @@ from adjustText import adjust_text
 %autoindent
 %matplotlib
 sns.set(font="Arial", font_scale=1, style='ticks')
+sc.settings.verbosity = 3
+plt.rcParams['figure.figsize'] = (6,6)
+plt.rc("axes.spines", top=False, right=False)
 
 # pySCENIC input file generation
-test3_vsmc = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3_vsmc.h5ad")
-test3_vsmc.X = test3_vsmc.layers['counts']
+test3_fb = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3_fb.h5ad")
+test3_fb.X = test3_fb.layers['counts']
 
 row_attrs = { 
-    "Gene": np.array(test3_vsmc.var.index) ,
+    "Gene": np.array(test3_fb.var.index) ,
 }
 col_attrs = { 
-    "CellID":  np.array(test3_vsmc.obs.index) ,
-    "nGene": np.array( np.sum(test3_vsmc.X.transpose()>0 , axis=0)).flatten() ,
-    "nUMI": np.array( np.sum(test3_vsmc.X.transpose() , axis=0)).flatten() ,
+    "CellID":  np.array(test3_fb.obs.index) ,
+    "nGene": np.array( np.sum(test3_fb.X.transpose()>0 , axis=0)).flatten() ,
+    "nUMI": np.array( np.sum(test3_fb.X.transpose() , axis=0)).flatten() ,
 }
 
-lp.create( 'test3_vsmc.loom', test3_vsmc.X.transpose(), row_attrs, col_attrs )
+lp.create( 'test3_fb.loom', test3_fb.X.transpose(), row_attrs, col_attrs )
 
 # GRN inference using the GRNBoost2 algorithm (from the Command-Line Interface (CLI) version of pySCENIC)
 '''
 database_dir='/data/Projects/phenomata/01.Projects/11.Vascular_Aging/Database/pySCENIC'
 pyscenic grn \
-test3_vsmc.loom \
+test3_fb.loom \
 ${database_dir}/mm_mgi_tfs.txt \
--o test3_vsmc_adj.csv \
+-o test3_fb_adj.csv \
 --num_workers 15
 '''
 
@@ -57,20 +60,20 @@ ${database_dir}/mm_mgi_tfs.txt \
 '''
 database_dir='/data/Projects/phenomata/01.Projects/11.Vascular_Aging/Database/pySCENIC'
 pyscenic ctx \
-test3_vsmc_adj.csv \
+test3_fb_adj.csv \
 ${database_dir}/mm10__refseq-r80__10kb_up_and_down_tss.mc9nr.feather \
 ${database_dir}/mm10__refseq-r80__500bp_up_and_100bp_down_tss.mc9nr.feather \
 --annotations_fname ${database_dir}/motifs-v9-nr.mgi-m0.001-o0.0.tbl \
---expression_mtx_fname test3_vsmc.loom \
---output test3_vsmc_reg.csv \
+--expression_mtx_fname test3_fb.loom \
+--output test3_fb_reg.csv \
 --mask_dropouts \
 --num_workers 15
 '''
 
 # Cellular enrichment using AUCell
-nGenesDetectedPerCell = np.sum(test3_vsmc.X>0, axis=1)
+nGenesDetectedPerCell = np.sum(test3_fb.X>0, axis=1)
 percentiles = pd.Series(np.quantile(nGenesDetectedPerCell, [0.01, 0.05, 0.10, 0.50, 1]), index=np.array([0.01, 0.05, 0.10, 0.50, 1]))
-fig, ax = plt.subplots(1, 1, figsize=(8, 5), dpi=150, constrained_layout=True)
+fig, ax = plt.subplots(1, 1, figsize=(10, 5), dpi=150, constrained_layout=True)
 sns.histplot(data=nGenesDetectedPerCell, legend=False)
 for i, x in enumerate(percentiles):
     ax.axvline(x=x, ymin=0, ymax=0.98, color='red')
@@ -81,16 +84,16 @@ ax.set_ylabel('# of Cells')
 
 '''
 pyscenic aucell \
-test3_vsmc.loom
-test3_vsmc.csv \
---output test3_vsmc_pyscenic_output.loom \
+test3_fb.loom
+test3_fb_reg.csv \
+--output test3_fb_pyscenic_output.loom \
 --num_workers 15 \
 --auc_threshold 0.05
 '''
 
 # Combine pySCENIC and ScanPy
 lf = lp.connect(
-    "/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/vSMC/test3_vsmc_pyscenic_output.loom",
+    "/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/FB/test3_fb_pyscenic_output.loom",
     mode='r+', validate=False)
 lf.ca.keys()
 # ['CellID', 'RegulonsAUC', 'nGene', 'nUMI']
@@ -102,29 +105,32 @@ lf.attrs.keys()
 auc_mtx = pd.DataFrame(lf.ca.RegulonsAUC, index=lf.ca.CellID)
 auc_mtx.columns = auc_mtx.columns.str.replace('\(', '_(')
 
-test3_vsmc = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3_vsmc.h5ad")
+test3_fb = sc.read_h5ad("/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/test3_fb.h5ad")
 #test3_endo = test3_endo[test3_endo.obs['endo_leiden_r05'].isin(['0', '1', '2', '3'])]
 
-sig = load_signatures('/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/vSMC/test3_vsmc_reg.csv')
+sig = load_signatures('/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/pySCENIC/FB/test3_fb_reg.csv')
 
-test3_vsmc = add_scenic_metadata(test3_vsmc, auc_mtx, sig)  # AUCell score가 test3_endo에 추가된다.
+test3_fb = add_scenic_metadata(test3_fb, auc_mtx, sig)  # AUCell score가 test3_fb에 추가된다.
 
-vsmc_leiden_to_celltype_dict = {'0': 'vSMC1',
-                                '4': 'vSMC2',
-                                '1': 'vSMC3',
-                                '2': 'vSMC4',
-                                '5': 'vSMC5',
-                                '3': 'vSMC6'}
+fb_leiden_to_celltype_dict = {'7': 'FB1',
+                              '1': 'FB2',
+                              '5': 'FB3',
+                              '2': 'FB4',
+                              '0': 'FB5',
+                              '4': 'FB6',
+                              '3': 'FB7',
+                              '6': 'FB8',
+                              '8': 'FB9'}
 
-test3_vsmc.obs['Subpopulations of vSMC'] = test3_vsmc.obs['vsmc_leiden_r05'].map(lambda x: vsmc_leiden_to_celltype_dict[x]).astype('category')
-order = ('vSMC1', 'vSMC2', 'vSMC3', 'vSMC4', 'vSMC5', 'vSMC6')
-test3_vsmc.obs['Subpopulations of vSMC'] = test3_vsmc.obs['Subpopulations of vSMC'].cat.reorder_categories(list(order), ordered=True)
+test3_fb.obs['Subpopulations of FB'] = test3_fb.obs['fb_leiden_r05'].map(lambda x: fb_leiden_to_celltype_dict[x]).astype('category')
+order = ('FB1', 'FB2', 'FB3', 'FB4', 'FB5', 'FB6', 'FB7', 'FB8', 'FB9')
+test3_fb.obs['Subpopulations of FB'] = test3_fb.obs['Subpopulations of FB'].cat.reorder_categories(list(order), ordered=True)
 
 
-cellAnnot = test3_vsmc.obs[['batch', 'Subpopulations of vSMC']]
-rss_vSMC_subclusters = regulon_specificity_scores(auc_mtx, cellAnnot['Subpopulations of vSMC'])
+cellAnnot = test3_fb.obs[['batch', 'Subpopulations of FB']]
+rss_fb_subclusters = regulon_specificity_scores(auc_mtx, cellAnnot['Subpopulations of FB'])
 
-cats = sorted(list(set(cellAnnot['Subpopulations of vSMC'])))
+cats = sorted(list(set(cellAnnot['Subpopulations of FB'])))
 
 #data = rss_vSMC_subclusters.T['0'].sort_values(ascending=False)[0:rss_vSMC_subclusters.shape[1]]
 
@@ -158,11 +164,11 @@ def plot_rss(rss, cell_type, top_n=5, max_n=None, ax=None):
             verticalalignment='center',
         )
 
-fig = plt.figure(figsize=(16.5, 8))
+fig = plt.figure(figsize=(8, 15))
 for c,num in zip(cats, range(1,len(cats)+1)):
-    x = rss_vSMC_subclusters.T[c]
-    ax = fig.add_subplot(1,6,num)
-    plot_rss(rss_vSMC_subclusters, c, top_n=5, max_n=None, ax=ax)
+    x = rss_fb_subclusters.T[c]
+    ax = fig.add_subplot(3,3,num)
+    plot_rss(rss_fb_subclusters, c, top_n=5, max_n=None, ax=ax)
     ax.set_ylim( x.min()-(x.max()-x.min())*0.05 , x.max()+(x.max()-x.min())*0.05 )
     for t in ax.texts:
         t.set_fontsize(12)
@@ -171,10 +177,7 @@ for c,num in zip(cats, range(1,len(cats)+1)):
     adjust_text(ax.texts, autoalign='xy', ha='right', va='bottom', arrowprops=dict(arrowstyle='-',color='lightgrey'), precision=0.001 )
 
 sns.despine()
-
-
-
-
+plt.tight_layout()
 
 # CELL TYPE SPECIFIC REGULATORS - Z-SCORE
 
