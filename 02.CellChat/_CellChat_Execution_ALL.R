@@ -60,6 +60,9 @@ https://github.com/sqjin/CellChat/issues/149 # ==> EC1, EC2, EC3, EC4 이렇게 
 ## When analyzing unsorted single-cell transcriptomes, under the assumption that abundant cell populations tend to send collectively stronger signals than the rare cell populations, CellChat can also consider the effect of cell proportion in each cell group in the probability calculation. USER can set population.size = TRUE.
 
 cellchat <- computeCommunProb(cellchat) # This may take about 10 minutes with "future::plan("multiprocess", workers = 10)"
+# 2023-03-22 computer restart해야해서 rdata 저장
+save.image(file = "/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/CellChat/ALL/2023-03-22.RData")
+load("/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/CellChat/ALL/2023-03-22.RData")
 # Filter out the cell-cell communication if there are only few number of cells in certain cell groups
 cellchat <- filterCommunication(cellchat, min.cells = 10) # 이거 일단 보류
 
