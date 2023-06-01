@@ -28,6 +28,7 @@ from statsmodels.stats.multitest import multipletests
 sns.set(font="Arial", font_scale=1, style='ticks')
 sc.settings.verbosity = 3
 plt.rcParams['figure.figsize'] = (6,6)
+plt.rc("axes.spines", top=False, right=False)
 #plt.rcParams['font.family'] = 'sans-serif'
 #plt.rcParams['font.sans-serif'] = 'Arial'
 cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["#104e8b", "#ffdab9", "#8b0a50"])

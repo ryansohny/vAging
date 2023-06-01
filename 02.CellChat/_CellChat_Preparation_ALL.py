@@ -58,4 +58,33 @@ leiden_to_celltype_dict = {'0': 'vSMC1',
 '13': 'Neuronal'}
 test3.obs['celltype'] = test3.obs['leiden_r05'].map(lambda x: leiden_to_celltype_dict[x]).astype('category')
 
-test3.write(filename="/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/CellChat/test3_forCellChat.h5ad")
+test3.write(filename="/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/CellChat/test3_forCellChat.h5ad") #2023-06-01부로 Mphage, Neuronal등의 이름이 바뀌어서 이거 새로 해야함
+
+
+test3_copy = test3.copy()
+leiden_to_detailed_celltype_dict = {'0': 'vSMC1',
+'1': 'vSMC2',
+'2': 'vSMC3',
+'3': 'FB1',
+'4': 'vSMC4',
+'5': 'EC1',
+'6': 'FB2',
+'7': 'EC2',
+'8': 'vSMC5',
+'9': 'FB3',
+'10': 'Bc',
+'11': 'M\u03A6',
+'12': 'Tc',
+'13': 'Neu'}
+test3_copy.obs['detailed_celltype'] = test3_copy.obs['leiden_r05'].map(lambda x: leiden_to_detailed_celltype_dict[x]).astype('category')
+detailed_celltype_order = ('EC1', 'EC2', 'vSMC1', 'vSMC2', 'vSMC3', 'vSMC4', 'vSMC5', 'FB1', 'FB2', 'FB3', 'Bc', 'M\u03A6', 'Tc', 'Neu')
+test3_copy.obs['detailed_celltype'] = test3_copy.obs['detailed_celltype'].cat.reorder_categories(list(detailed_celltype_order), ordered=True)
+test3_copy.X = scipy.sparse.csr_matrix.toarray(test3_copy.layers['scran_log1p'])
+
+m01_cellchat = test3_copy[test3_copy.obs['Age'] == 'm01'].copy()
+m10_cellchat = test3_copy[test3_copy.obs['Age'] == 'm10'].copy()
+m20_cellchat = test3_copy[test3_copy.obs['Age'] == 'm20'].copy()
+
+m01_cellchat.write(filename="/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/CellChat/m01_forCellChat.h5ad")
+m10_cellchat.write(filename="/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/CellChat/m10_forCellChat.h5ad")
+m20_cellchat.write(filename="/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/CellChat/m20_forCellChat.h5ad")
