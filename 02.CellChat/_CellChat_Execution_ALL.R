@@ -70,10 +70,8 @@ cellchat <- computeCommunProb(cellchat) # This may take about 10 minutes with "f
 
 # 2023-03-22 computer restart해야해서 rdata 저장
 save.image(file = "/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/CellChat/ALL/2023-03-22.RData")
-
-
-
-load("/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/CellChat/ALL/2023-03-22.RData")
+# 2023-06-02 computer restart해야해서 rdata 저장
+save.image(file = "/mnt/data/Projects/phenomata/01.Projects/11.Vascular_Aging/03.Scanpy/CellChat/ALL/2023-06-02.RData")
 
 
 
